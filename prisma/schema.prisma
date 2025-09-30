@@ -1,0 +1,382 @@
+generator client {
+  provider = "prisma-client-js"
+  //output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------
+// USERS
+// -------------------
+model User {
+  id                  String   @id @default(uuid())
+  name                String
+  user_name           String   @unique
+  password            String
+  last_login          DateTime?
+  user_type           String
+  admin_level         String?
+  subcity_id          String?
+  woreda_id           String?
+  school_id           String?
+  grade_id            String?
+  gender              String
+  section             String?
+  photo               String?
+  status              Boolean  @default(true)
+  added_by            String?
+  updated_by          String?
+  password_changed_by String?
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
+
+  // Relations to other entities
+  subcity   Subcity?  @relation(fields: [subcity_id], references: [id], onDelete: Cascade)
+  woreda    Woreda?   @relation(fields: [woreda_id], references: [id], onDelete: Cascade)
+  school    School?   @relation(fields: [school_id], references: [id], onDelete: Cascade)
+  grade     Grade?    @relation(fields: [grade_id], references: [id], onDelete: Cascade)
+
+  // Self-relations
+  addedBy          User? @relation("UserAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
+  updatedBy        User? @relation("UserUpdatedBy", fields: [updated_by], references: [id], onDelete: Cascade)
+  passwordChangedBy User? @relation("PasswordChangedBy", fields: [password_changed_by], references: [id], onDelete: Cascade)
+
+  users_added    User[] @relation("UserAddedBy")
+  users_updated  User[] @relation("UserUpdatedBy")
+  users_password_changed User[] @relation("PasswordChangedBy")
+
+  visit_histories   VisitHistory[]
+  student_downloads StudentDownload[]
+  teacher_downloads TeacherDownload[]
+  teacher_courses   TeacherGradeCourse[]
+  resources_added   Resource[] @relation("ResourceAddedBy")
+  resources_updated Resource[] @relation("ResourceUpdatedBy")
+  courses_added     Course[]   @relation("CourseAddedBy")
+  courses_updated   Course[]   @relation("CourseUpdatedBy")
+  subcities_added   Subcity[]  @relation("SubcityAddedBy")
+  subcities_updated Subcity[]  @relation("SubcityUpdatedBy")
+  woredas_added     Woreda[]   @relation("WoredaAddedBy")
+  woredas_updated   Woreda[]   @relation("WoredaUpdatedBy")
+  schools_added     School[]   @relation("SchoolAddedBy")
+  schools_updated   School[]   @relation("SchoolUpdatedBy")
+  grade_courses_added   GradeCourse[] @relation("GradeCourseAddedBy")
+  grade_courses_updated GradeCourse[] @relation("GradeCourseUpdatedBy")
+
+  teacherGradeCourses TeacherGradeCourse[] @relation("TeacherGradeCourseAddedBy")
+  studentDownloads    StudentDownload[] @relation("StudentResourceDownload")
+  teacherDownloads    TeacherDownload[] @relation("TeacherResourceDownload")
+  examQuestionsCreated ExamQuestion[] @relation("ExamQuestionCreatedBy")
+  examQuestionsUpdated ExamQuestion[] @relation("ExamQuestionUpdatedBy")
+  examResults         ExamResult[]
+  examComments         ExamComment[]
+}
+
+// -------------------
+// VISIT HISTORY
+// -------------------
+model VisitHistory {
+  id          String   @id @default(uuid())
+  user_id     String
+  login_date  DateTime
+  is_student  Boolean  @default(false)
+  is_teacher  Boolean  @default(false)
+  is_director Boolean  @default(false)
+  is_admin    Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+// -------------------
+// SUBCITY
+// -------------------
+model Subcity {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  added_by   String
+  updated_by String?
+  status     Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  addedBy   User @relation("SubcityAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
+  updatedBy User? @relation("SubcityUpdatedBy", fields: [updated_by], references: [id], onDelete: Cascade)
+
+  woredas Woreda[]
+  users   User[]
+}
+
+// -------------------
+// WOREDA
+// -------------------
+model Woreda {
+  id         String   @id @default(uuid())
+  subcity_id String
+  name       String
+  added_by   String
+  updated_by String?
+  status     Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  subcity   Subcity @relation(fields: [subcity_id], references: [id], onDelete: Cascade)
+  addedBy   User    @relation("WoredaAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
+  updatedBy User?   @relation("WoredaUpdatedBy", fields: [updated_by], references: [id], onDelete: Cascade)
+
+  schools School[]
+  users   User[]
+}
+
+// -------------------
+// SCHOOL
+// -------------------
+model School {
+  id          String   @id @default(uuid())
+  woreda_id   String
+  name        String
+  added_by    String
+  updated_by  String?
+  status      Boolean  @default(true)
+  school_type String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  woreda   Woreda @relation(fields: [woreda_id], references: [id], onDelete: Cascade)
+  addedBy  User   @relation("SchoolAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
+  updatedBy User? @relation("SchoolUpdatedBy", fields: [updated_by], references: [id], onDelete: Cascade)
+
+  users User[]
+}
+
+// -------------------
+// COURSE
+// -------------------
+model Course {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  added_by   String
+  updated_by String?
+  status     Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  addedBy   User  @relation("CourseAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
+  updatedBy User? @relation("CourseUpdatedBy", fields: [updated_by], references: [id], onDelete: Cascade)
+
+  grade_courses      GradeCourse[]
+  resources          Resource[]
+  teacherGradeCourses TeacherGradeCourse[]
+  examQuestions      ExamQuestion[]
+  examResults        ExamResult[]
+}
+
+// -------------------
+// GRADE
+// -------------------
+model Grade {
+  id         String   @id @default(uuid())
+  name       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  users              User[]
+  grade_courses      GradeCourse[]
+  resources          Resource[]
+  teacherGradeCourses TeacherGradeCourse[]
+  examQuestions      ExamQuestion[]
+  examResults        ExamResult[]
+}
+
+// -------------------
+// GRADE_COURSE
+// -------------------
+model GradeCourse {
+  id         String   @id @default(uuid())
+  grade_id   String
+  course_id  String
+  added_by   String
+  updated_by String?
+  status     Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  grade     Grade @relation(fields: [grade_id], references: [id], onDelete: Cascade)
+  course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  addedBy   User   @relation("GradeCourseAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
+  updatedBy User?  @relation("GradeCourseUpdatedBy", fields: [updated_by], references: [id], onDelete: Cascade)
+
+  @@unique([grade_id, course_id]) // <-- Add this line
+}
+
+// -------------------
+// RESOURCE
+// -------------------
+model Resource {
+  id                String   @id @default(uuid())
+  name              String
+  file_path         String
+  grade_id          String
+  course_id         String
+  chapter           Int?
+  lesson            Int?
+  added_by          String
+  is_teacher_guidance Boolean @default(false)
+  updated_by        String?
+  status            Boolean  @default(true)
+  resource_type     ResourceType
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  grade     Grade @relation(fields: [grade_id], references: [id], onDelete: Cascade)
+  course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  addedBy   User   @relation("ResourceAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
+  updatedBy User?  @relation("ResourceUpdatedBy", fields: [updated_by], references: [id], onDelete: Cascade)
+
+  studentDownloads StudentDownload[]
+  teacherDownloads TeacherDownload[]
+  
+}
+
+enum ResourceType {
+  video
+  image
+  pdf
+}
+
+// -------------------
+// TEACHER_GRADE_COURSE
+// -------------------
+model TeacherGradeCourse {
+  id         String   @id @default(uuid())
+  teacher_id String
+  grade_id   String
+  course_id  String
+  added_by   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  teacher  User   @relation(fields: [teacher_id], references: [id], onDelete: Cascade)
+  grade    Grade  @relation(fields: [grade_id], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  addedBy  User   @relation("TeacherGradeCourseAddedBy", fields: [added_by], references: [id], onDelete: Cascade)
+}
+
+// -------------------
+// STUDENT DOWNLOAD
+// -------------------
+model StudentDownload {
+  id          String   @id @default(uuid())
+  student_id  String
+  resource_id String
+  year        Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  student  User     @relation("StudentResourceDownload", fields: [student_id], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resource_id], references: [id], onDelete: Cascade)
+
+  User User[]
+}
+
+// -------------------
+// TEACHER DOWNLOAD
+// -------------------
+model TeacherDownload {
+  id          String   @id @default(uuid())
+  teacher_id  String
+  resource_id String
+  year        Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  teacher  User     @relation("TeacherResourceDownload", fields: [teacher_id], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resource_id], references: [id], onDelete: Cascade)
+
+  User User[]
+}
+
+// -------------------
+// EXAM QUESTION
+// -------------------
+model ExamQuestion {
+  id             String   @id @default(uuid())
+  question_text  String
+  question_image String?
+  answer_desc    String?
+  answer_image   String?
+  course_id      String
+  grade_id       String
+  chapter        Int
+  created_by     String
+  updated_by     String?
+  status         Boolean   @default(false)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  course   Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  grade    Grade  @relation(fields: [grade_id], references: [id], onDelete: Cascade)
+  createdBy User  @relation("ExamQuestionCreatedBy", fields: [created_by], references: [id], onDelete: Cascade)
+  updatedBy User? @relation("ExamQuestionUpdatedBy", fields: [updated_by], references: [id], onDelete: Cascade)
+
+  options ExamOption[]
+  comments ExamComment[]
+}
+
+// -------------------
+// EXAM OPTION
+// -------------------
+model ExamOption {
+  id             String   @id @default(uuid())
+  question_id    String
+  option_text    String?
+  option_image   String?
+  is_correct     Boolean   @default(false)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  question ExamQuestion @relation(fields: [question_id], references: [id], onDelete: Cascade)
+}
+
+// -------------------
+// EXAM RESULT
+// -------------------
+model ExamResult {
+  id          String   @id @default(uuid())
+  user_id     String
+  grade_id    String
+  course_id   String
+  max_score   Int
+  result      Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  grade  Grade  @relation(fields: [grade_id], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+}
+
+
+model ExamComment {
+  id          String   @id @default(uuid())
+  user_id     String
+  question_id String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  question ExamQuestion @relation(fields: [question_id], references: [id], onDelete: Cascade)
+
+}
+
+
+model BlacklistedToken {
+  id          String   @id @default(uuid())
+  token     String   @unique
+  expireAt  DateTime
+
+  @@index([expireAt]) // optional: for easy cleanup of expired tokens
+}

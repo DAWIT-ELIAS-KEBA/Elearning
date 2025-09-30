@@ -1,0 +1,100 @@
+version: '3.8'
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio1
+    ports:
+      - '3002:9000'
+      - '3003:9001'
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    # Add a restart policy to ensure MinIO stays running
+    restart: always
+
+  # New service to configure MinIO bucket policy
+  minio-config:
+    image: minio/mc
+    container_name: minio-config
+    depends_on:
+      - minio # Ensure minio service is up and running before this one
+    # The entrypoint is rewritten using a list format to avoid the YAML decoding error.
+    entrypoint: 
+      - /bin/sh
+      - -c
+      - |
+        /usr/bin/mc alias set myminio http://minio:9000 minioadmin minioadmin;
+        /usr/bin/mc mb myminio/document-storage --ignore-existing;
+        /usr/bin/mc policy set download myminio/document-storage;
+  db:
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    container_name: postgres
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mofa_backend
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+      - minio
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres?schema=public
+      - JWT_SECRET= ${JWT_SECRET}
+      - PORT=${PORT}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_PORT=${MINIO_PORT}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_USE_SSL=false
+      - MINIO_BUCKET_NAME=${MINIO_BUCKET_NAME}
+      - NODE_ENV=${NODE_ENV}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - JWT_TOKEN_AUDIENCE=${JWT_TOKEN_AUDIENCE}
+      - JWT_TOKEN_ISSUER=${JWT_TOKEN_ISSUER}
+      - JWT_ACCESS_TOKEN_TTL=${JWT_ACCESS_TOKEN_TTL}
+      - JWT_REFRESH_TOKEN_TTL=${JWT_REFRESH_TOKEN_TTL}
+      - EMAIL_SERVICE_HOST=${EMAIL_SERVICE_HOST}
+      - EMAIL_SERVICE_PORT=${EMAIL_SERVICE_PORT}
+      - EMAIL_SERVICE_USER=${EMAIL_SERVICE_USER}
+      - EMAIL_SERVICE_PASSWORD=${EMAIL_SERVICE_PASSWORD}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - FRONTEND_RESET_PASSWORD_URL=${FRONTEND_RESET_PASSWORD_URL}
+    ports:
+      - '3001:4001'
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: nest-pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=pgadmin
+    ports:
+      - '5050:80'
+    depends_on:
+      - db
+
+volumes:
+  minio_data: # Define the named volume
