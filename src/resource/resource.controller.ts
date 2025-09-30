@@ -103,4 +103,13 @@ export class ResourceController {
   delete(@Param('id') id: string) {
     return this.resourceService.delete(id);
   }
+
+  @Get('fileUrl/:id')
+  @ApiOperation({ summary: 'Get presigned download URL for a resource' })
+  @ApiParam({ name: 'id', description: 'Resource ID' })
+  getPresignedUrl(@Param('id') id: string) {
+    return this.resourceService.getResourcePresignedUrl(id);
+  }
+
+
 }

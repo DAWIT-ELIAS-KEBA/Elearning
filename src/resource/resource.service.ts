@@ -161,4 +161,23 @@ export class ResourceService {
     if (!resource) throw new NotFoundException('Resource not found');
     return resource;
   }
+
+  async getResourcePresignedUrl(resourceId: string): Promise<string> {
+    const resource = await this.prisma.resource.findUnique({ where: { id: resourceId } });
+    if (!resource) throw new NotFoundException('Resource not found');
+
+    // objectName is everything after the bucket name
+    const objectName = resource.file_path.split('/').slice(1).join('/');
+    return this.getPresignedUrl(objectName);
+  }
+
+
+  async getPresignedUrl(objectName: string, expirySeconds = 60 * 60 * 24 * 7): Promise<string> {
+    const url = await this.minioClient.presignedGetObject(
+      this.bucketName,
+      objectName,
+      expirySeconds
+    );
+    return url;
+  }
 }

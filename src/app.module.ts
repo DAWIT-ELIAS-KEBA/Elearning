@@ -31,24 +31,24 @@ import { WoredaAdminModule } from './woreda-admin/woreda-admin.module';
     ConfigModule.forRoot({
       isGlobal: true,   // makes ConfigService available everywhere
     }),
+    PrismaModule, 
     AuthModule,   // handles login, registration, JWT
-    TeacherModule,
-    TeacherCourseModule,
     UserModule,
-    WoredaModule,
-    WoredaAdminModule,
-    PrismaModule, // provides PrismaService globally
     CityAdminModule,
     CourseModule,
-    DashboardModule,
-    DirectorModule,
-    ExamModule,
     GradeModule,
     ResourceModule,
-    SchoolModule,
-    StudentModule,
     SubcityModule,
-    SubcityAdminModule
+    SubcityAdminModule,
+    WoredaModule,
+    WoredaAdminModule,
+    DirectorModule,
+    SchoolModule,
+    TeacherModule,
+    TeacherCourseModule,
+    StudentModule,
+    ExamModule,
+    DashboardModule,
     
   ],
   controllers: [AppController],
