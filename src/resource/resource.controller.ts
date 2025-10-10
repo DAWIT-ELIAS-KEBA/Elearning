@@ -40,6 +40,7 @@ export class ResourceController {
       type: 'object',
       properties: {
         name: { type: 'string' },
+        description: { type: 'string' },
         grade_id: { type: 'string' },
         course_id: { type: 'string' },
         chapter: { type: 'number' },
@@ -70,6 +71,7 @@ export class ResourceController {
       properties: {
         resource_id: { type: 'string' },
         name: { type: 'string' },
+        description: { type: 'string' },
         grade_id: { type: 'string' },
         course_id: { type: 'string' },
         chapter: { type: 'number' },

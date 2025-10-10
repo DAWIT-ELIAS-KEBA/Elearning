@@ -218,6 +218,7 @@ model GradeCourse {
 model Resource {
   id                String   @id @default(uuid())
   name              String
+  description       String
   file_path         String
   grade_id          String
   course_id         String

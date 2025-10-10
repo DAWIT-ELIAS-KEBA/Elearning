@@ -66,6 +66,7 @@ export class ResourceService {
         data: {
           id: randomUUID(),
           name: dto.name,
+          description: dto.description,
           grade_id: dto.grade_id,
           course_id: dto.course_id,
           chapter,
@@ -112,6 +113,7 @@ export class ResourceService {
       where: { id: dto.resource_id },
       data: {
         name: dto.name ?? resource.name,
+        description: dto.description ?? resource.description,
         grade_id: dto.grade_id ?? resource.grade_id,
         course_id: dto.course_id ?? resource.course_id,
         chapter,

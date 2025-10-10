@@ -20,6 +20,12 @@ export class UpdateResourceDto {
   @IsString()
   name?: string;
 
+
+  @ApiProperty({ description: 'Resource description', example: 'Extreme Physics refrence book' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
   @ApiPropertyOptional({ description: 'Grade ID', example: 'uuid-of-grade' })
   @IsOptional()
   @IsUUID()

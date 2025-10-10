@@ -17,6 +17,11 @@ export class CreateResourceDto {
   @IsString()
   name: string;
 
+  @ApiProperty({ description: 'Resource description', example: 'Extreme Physics refrence book' })
+  @IsNotEmpty()
+  @IsString()
+  description: string;
+
   @ApiProperty({ description: 'Grade ID', example: 'uuid-of-grade' })
   @IsNotEmpty()
   @IsUUID()

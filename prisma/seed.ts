@@ -114,6 +114,7 @@ async function main() {
         await prisma.resource.create({
           data: {
             name: `${course.name} ${grade.name} Chapter ${chapter}`,
+            description: `${course.name} ${grade.name} Chapter ${chapter}`,
             file_path: `/files/${course.name.toLowerCase()}-${grade.name.replace(
               ' ',
               ''
