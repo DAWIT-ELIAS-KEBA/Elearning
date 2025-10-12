@@ -22,6 +22,19 @@ export class AuthService {
       woreda: true,
       subcity: true,
       grade: true,
+      roles: {
+        include: {
+          role: {
+            include: {
+              rolePermissions: {
+                include: {
+                  permission: true,
+                },
+              },
+            },
+          },
+        }
+      }
     },
   });
 
@@ -36,6 +49,15 @@ export class AuthService {
   const access_token = this.jwtService.sign(payload);
 
   // Return token + user info
+
+  const permissions = user.roles.flatMap((userRole) =>
+    userRole.role.rolePermissions.map((rp) => rp.permission.permission_name),
+  );
+
+  // 🔹 Remove duplicates (if same permission appears via multiple roles)
+  const uniquePermissions = [...new Set(permissions)];
+
+
   return {
     access_token,
     user: {
@@ -52,6 +74,11 @@ export class AuthService {
       woreda: user.woreda ? { id: user.woreda.id, name: user.woreda.name } : null,
       subcity: user.subcity ? { id: user.subcity.id, name: user.subcity.name } : null,
       grade: user.grade ? { id: user.grade.id, name: user.grade.name } : null,
+       roles: user.roles.map((r) => ({
+        id: r.role.id,
+        name: r.role.role_name,
+      })),
+      permissions: uniquePermissions, 
     },
   };
 }

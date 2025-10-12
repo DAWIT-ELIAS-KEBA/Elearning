@@ -1,50 +1,76 @@
-// src/auth/guards/roles.guard.ts
+// src/auth/guards/permissions.guard.ts
 import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  UnauthorizedException,
   ForbiddenException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorators/roles.decorator';
+import { PrismaService } from '../../prisma/prisma.service'; // adjust path as needed
+import { PERMISSIONS_KEY } from '../decorators/permissions.decorator';
 
 @Injectable()
-export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+export class PermissionsGuard implements CanActivate {
+  constructor(
+    private reflector: Reflector,
+    private prisma: PrismaService,
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const requiredPermissions = this.reflector.getAllAndOverride<string[]>(
+      PERMISSIONS_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
-    if (!requiredRoles) return true;
+    // If no permissions are specified, allow access
+    if (!requiredPermissions) return true;
 
     const request = context.switchToHttp().getRequest();
     const user = request.user; // set by JwtAuthGuard
 
     if (!user) {
-      throw new UnauthorizedException('You must login first');
+      throw new UnauthorizedException('You must log in first');
     }
 
-    const roleChecks: Record<string, (u: any) => boolean> = {
-      student: (u) => u.user_type === 'student',
-      teacher: (u) => u.user_type === 'teacher',
-      director: (u) =>
-        u.user_type === 'admin' && u.admin_level === 'school' && !!u.school_id,
-      woreda_admin: (u) =>
-        u.user_type === 'admin' && u.admin_level === 'woreda' && !!u.woreda_id,
-      subcity_admin: (u) =>
-        u.user_type === 'admin' && u.admin_level === 'subcity' && !!u.subcity_id,
-      city_admin: (u) =>
-        u.user_type === 'admin' && u.admin_level === 'city',
-    };
+    // ✅ Fetch the user's roles with their permissions
+    const userWithRoles = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        roles: {
+          include: {
+            role: {
+              include: {
+                rolePermissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
 
-    const hasRole = requiredRoles.some((role) => roleChecks[role]?.(user));
+    if (!userWithRoles) {
+      throw new ForbiddenException('User not found');
+    }
 
-    if (!hasRole) {
-      throw new ForbiddenException('You are not authorized for this role');
+    // ✅ Flatten all permissions the user has through their roles
+    const userPermissions = userWithRoles.roles.flatMap((userRole) =>
+      userRole.role.rolePermissions.map((rp) => rp.permission.permission_name),
+    );
+
+    // ✅ Check if the user has all required permissions
+    const hasPermission = requiredPermissions.every((p) =>
+      userPermissions.includes(p),
+    );
+
+    if (!hasPermission) {
+      throw new ForbiddenException(
+        `You do not have the required permission(s): ${requiredPermissions.join(', ')}`,
+      );
     }
 
     return true;

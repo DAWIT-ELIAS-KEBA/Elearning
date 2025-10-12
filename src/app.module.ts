@@ -22,6 +22,10 @@ import { ExamModule } from './exam/exam.module';
 import { SubcityAdminModule } from './subcity-admin/subcity-admin.module';
 import { TeacherCourseModule } from './teacher-course/teacher-course.module';
 import { WoredaAdminModule } from './woreda-admin/woreda-admin.module';
+import { RolesModule } from './roles/roles.module';
+import { UserRolesModule } from './user-roles/user-roles.module';
+import { PermissionsModule } from './permissions/permissions.module';
+import { RolePermissionsModule } from './role-permissions/role-permissions.module';
 
 
 
@@ -34,6 +38,10 @@ import { WoredaAdminModule } from './woreda-admin/woreda-admin.module';
     PrismaModule, 
     AuthModule,   // handles login, registration, JWT
     UserModule,
+    RolesModule,
+    UserRolesModule,
+    PermissionsModule,
+    RolePermissionsModule,
     CityAdminModule,
     CourseModule,
     GradeModule,

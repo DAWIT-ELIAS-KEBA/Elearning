@@ -72,7 +72,58 @@ model User {
   examQuestionsUpdated ExamQuestion[] @relation("ExamQuestionUpdatedBy")
   examResults         ExamResult[]
   examComments         ExamComment[]
+  roles         UserRole[]
 }
+
+
+
+model Role {
+  id          String           @id @default(uuid()) @map("RoleID")
+  role_name        String           @unique @map("RoleName")
+  description     String?          @map("Description")
+  created_at       DateTime         @default(now()) @map("CreatedAt")
+  updated_at       DateTime         @updatedAt @map("UpdatedAt")
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+
+  @@map("Roles")
+}
+
+model UserRole {
+  id String   @id @default(uuid()) @map("UserRoleID")
+  user_id     String   @map("UserID")
+  role_id     String   @map("RoleID")
+  assigned_at DateTime @default(now()) @map("AssignedAt")
+  role       Role     @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id])
+  @@map("UserRoles")
+}
+
+model Permission {
+  id    String           @id @default(uuid()) @map("PermissionID")
+  permission_name  String           @unique @map("PermissionName")
+  description     String?          @map("Description")
+  created_at       DateTime         @default(now()) @map("CreatedAt")
+  updated_at       DateTime         @updatedAt @map("UpdatedAt")
+  rolePermissions RolePermission[]
+
+  @@map("Permissions")
+}
+
+model RolePermission {
+  id String     @id @default(uuid()) @map("RolePermissionID")
+  role_id           String     @map("RoleID")
+  permission_id     String     @map("PermissionID")
+  assigned_at       DateTime   @default(now()) @map("AssignedAt")
+  permission       Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  role             Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id])
+  @@map("RolePermissions")
+}
+
 
 // -------------------
 // VISIT HISTORY
