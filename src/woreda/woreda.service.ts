@@ -1,46 +1,67 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateWoredaDto } from './dto/create-woreda.dto';
 import { UpdateWoredaDto } from './dto/update-woreda.dto';
 
 @Injectable()
 export class WoredaService {
-  private woredas: any[] = []; // Mock storage, replace with DB repo
+  constructor(private readonly prisma: PrismaService) {}
 
-  async findAllBySubcity(subcityId: string) {
-    return this.woredas.filter(w => w.subcity_id === subcityId);
+  async findAll() {
+    return this.prisma.woreda.findMany({
+      where: { status: true },
+      include: {
+        subcity: true,
+        addedBy: { select: { id: true, name: true } },
+        updatedBy: { select: { id: true, name: true } },
+      },
+    });
   }
 
-  async create(dto: CreateWoredaDto, userId: string, subcityId: string) {
-    const newWoreda = {
-      id: Date.now().toString(),
-      name: dto.woreda_name,
-      subcity_id: subcityId,
-      added_by: userId,
-    };
-    this.woredas.push(newWoreda);
-    return newWoreda;
+  async create(dto: CreateWoredaDto, userId: string) {
+    return this.prisma.woreda.create({
+      data: {
+        name: dto.woreda_name,
+        subcity_id: dto.subcityId,
+        added_by: userId,
+      },
+    });
   }
 
   async update(dto: UpdateWoredaDto, userId: string) {
-    const woreda = this.woredas.find(w => w.id === dto.woreda_id);
+    const woreda = await this.prisma.woreda.findUnique({
+      where: { id: dto.woreda_id },
+    });
+
     if (!woreda) throw new NotFoundException('Woreda not found');
 
-    woreda.name = dto.woreda_name;
-    woreda.updated_by = userId;
-    return woreda;
+    return this.prisma.woreda.update({
+      where: { id: dto.woreda_id },
+      data: {
+        name: dto.woreda_name,
+        subcity_id: dto.subcityId,
+        updated_by: userId,
+      },
+    });
   }
 
   async delete(woredaId: string) {
-    const index = this.woredas.findIndex(w => w.id === woredaId);
-    if (index === -1) throw new NotFoundException('Woreda not found');
-    const deleted = this.woredas.splice(index, 1);
-    return { message: 'Woreda deleted successfully', deleted };
+    const woreda = await this.prisma.woreda.findUnique({
+      where: { id: woredaId },
+      include: {
+        schools:true}
+    });
+
+    if (!woreda) throw new NotFoundException('Woreda not found');
+
+    if(woreda.schools.length>0)
+    {
+       if (!woreda) throw new NotFoundException('First delete all schools under this woredas!');
+    }
+
+    await this.prisma.woreda.delete({ where: { id: woredaId } });
+    return { message: 'Woreda deleted successfully' };
   }
 
-  async getSubcityInfo(user: any) {
-    return {
-      id: user.subcity_id,
-      subcity_name: user.subcity_name || 'Unknown',
-    };
-  }
+ 
 }

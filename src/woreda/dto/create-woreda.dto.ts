@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreateWoredaDto {
   @ApiProperty({ description: 'Woreda name', example: 'Woreda 01' })
@@ -7,4 +7,10 @@ export class CreateWoredaDto {
   @IsString()
   @MaxLength(255)
   woreda_name: string;
+
+  @ApiProperty({ description: 'Subcity ID', example: 'uuid-of-subcity' })
+  @IsNotEmpty()
+  @IsUUID()
+  subcityId: string;
+
 }

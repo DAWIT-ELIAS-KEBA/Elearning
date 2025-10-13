@@ -7,10 +7,16 @@ import { UpdateSchoolDto } from './dto/update-school.dto';
 export class SchoolService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAllByWoreda(woredaId: string) {
+  async findAll() {
     return this.prisma.school.findMany({
-      where: { woreda_id: woredaId },
       orderBy: { created_at: 'desc' },
+       include: {
+        woreda: {
+          include:{
+            subcity:true
+          }
+        }
+       }
     });
   }
 
@@ -19,7 +25,7 @@ export class SchoolService {
     const exists = await this.prisma.school.findFirst({
       where: {
         name: dto.name,
-        woreda_id: user.woreda_id,
+        woreda_id: dto.woreda_id,
       },
     });
     if (exists) {
@@ -31,7 +37,7 @@ export class SchoolService {
       data: {
         name: dto.name,
         school_type: dto.school_type,
-        woreda_id: user.woreda_id, // must be a real ID from Woreda table
+        woreda_id: dto.woreda_id, // must be a real ID from Woreda table
         added_by: user.id,
         status: true,
       },
@@ -40,14 +46,14 @@ export class SchoolService {
 
   async update(dto: UpdateSchoolDto, user: any) {
     const school = await this.prisma.school.findFirst({
-      where: { id: dto.school_id, woreda_id: user.woreda_id },
+      where: { id: dto.school_id},
     });
     if (!school) throw new NotFoundException('School not found!');
 
     const duplicate = await this.prisma.school.findFirst({
       where: {
         name: dto.name,
-        woreda_id: user.woreda_id,
+        woreda_id: dto.woreda_id,
         NOT: { id: dto.school_id },
       },
     });
@@ -58,6 +64,7 @@ export class SchoolService {
       data: {
         name: dto.name,
         school_type: dto.school_type,
+        woreda_id: dto.woreda_id,
         updated_by: user.id,
         updated_at: new Date(),
       },
@@ -66,9 +73,13 @@ export class SchoolService {
 
   async delete(schoolId: string, user: any) {
     const school = await this.prisma.school.findFirst({
-      where: { id: schoolId, woreda_id: user.woreda_id },
+      where: { id: schoolId },
+      include:{
+        users:true
+      }
     });
     if (!school) throw new NotFoundException('Select valid school to delete!');
+    if (school.users.length>0) throw new NotFoundException('There is student or teacher registered with this school so you can not delete it!');
 
     try {
       await this.prisma.school.delete({ where: { id: schoolId } });
@@ -84,7 +95,7 @@ export class SchoolService {
 
   async toggle(schoolId: string, user: any) {
     const school = await this.prisma.school.findFirst({
-      where: { id: schoolId, woreda_id: user.woreda_id },
+      where: { id: schoolId },
     });
     if (!school) throw new NotFoundException('School not found!');
 

@@ -9,11 +9,12 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiParam, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { SchoolService } from './school.service';
 import { CreateSchoolDto } from './dto/create-school.dto';
 import { UpdateSchoolDto } from './dto/update-school.dto';
+import { ToggleSchoolDto } from './dto/toggle-school.dto';
 
 @ApiTags('School')
 @Controller('schools')
@@ -25,11 +26,12 @@ export class SchoolController {
   @Get()
   @ApiOperation({ summary: 'View all schools in user woreda' })
   async findAll(@Req() req) {
-    return this.schoolService.findAllByWoreda(req.user.woreda_id);
+    return this.schoolService.findAll();
   }
 
   @Post()
   @ApiOperation({ summary: 'Register a new school' })
+  @ApiBody({ type: CreateSchoolDto })
   async create(@Body() dto: CreateSchoolDto, @Req() req) {
     return this.schoolService.create(dto, req.user);
   }
@@ -37,6 +39,7 @@ export class SchoolController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update school' })
   @ApiParam({ name: 'id', description: 'School ID' })
+  @ApiBody({ type: UpdateSchoolDto })
   async update(@Param('id') id: string, @Body() dto: UpdateSchoolDto, @Req() req) {
     dto.school_id = id;
     return this.schoolService.update(dto, req['user']);

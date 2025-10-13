@@ -12,4 +12,10 @@ export class UpdateWoredaDto {
   @IsString()
   @MaxLength(25)
   woreda_name: string;
+
+  @ApiProperty({ description: 'Subcity ID', example: 'uuid-of-subcity' })
+  @IsNotEmpty()
+  @IsUUID()
+  subcityId: string;
+
 }
