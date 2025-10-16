@@ -48,7 +48,6 @@ import { RolePermissionsModule } from './role-permissions/role-permissions.modul
     ResourceModule,
     SubcityModule,
     WoredaModule,
-    DirectorModule,
     SchoolModule,
     TeacherModule,
     TeacherCourseModule,

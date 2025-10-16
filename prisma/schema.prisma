@@ -102,11 +102,13 @@ model UserRole {
 }
 
 model Permission {
-  id    String           @id @default(uuid()) @map("PermissionID")
-  permission_name  String           @unique @map("PermissionName")
+  id              String           @id @default(uuid()) @map("PermissionID")
+  permission_name String           @unique @map("PermissionName")
+  category        String           @default("") @map("Category")
+  type            String           @default("") @map("Type")
   description     String?          @map("Description")
-  created_at       DateTime         @default(now()) @map("CreatedAt")
-  updated_at       DateTime         @updatedAt @map("UpdatedAt")
+  created_at      DateTime         @default(now()) @map("CreatedAt")
+  updated_at      DateTime         @updatedAt @map("UpdatedAt")
   rolePermissions RolePermission[]
 
   @@map("Permissions")

@@ -27,6 +27,14 @@ export class RegisterCityAdminDto {
     example: 'Male or  Female',
   }))
   gender: string;
+
+
+  @IsNotEmpty()
+  @ApiProperty(({
+    description: 'School ID of school !',
+    example: '2cd63r-7h4488-tdn45-be54rj'
+  }))
+  school_id: string;
 }
 
 export class UpdateCityAdminDto {
@@ -61,6 +69,13 @@ export class UpdateCityAdminDto {
   }))
   @IsIn(['Male', 'Female'])
   gender: string;
+
+  @IsNotEmpty()
+  @ApiProperty(({
+    description: 'School ID of school !',
+    example: '2cd63r-7h4488-tdn45-be54rj'
+  }))
+  school_id: string;
 }
 
 export class CityChangePasswordDto {

@@ -33,106 +33,99 @@ async function main() {
   // ------------------------------
   // All Permissions
   // ------------------------------
-  const detailedPermissions = [
+const detailedPermissions = [
+  ['create-role', 'Role Management', 'admin'],
+  ['update-role', 'Role Management', 'admin'],
+  ['delete-role', 'Role Management', 'admin'],
+  ['view-role', 'Role Management', 'admin'],
 
-    'create-role',
-    'update-role',
-    'delete-role',
-    'view-role',
+  ['create-user-role', 'User Role Management', 'admin'],
+  ['update-user-role', 'User Role Management', 'admin'],
+  ['delete-user-role', 'User Role Management', 'admin'],
+  ['view-user-role', 'User Role Management', 'admin'],
 
-    'create-user-role',
-    'update-user-role',
-    'delete-user-role',
-    'view-user-role',
+  ['create-role-permission', 'Role Permission Management', 'admin'],
+  ['update-role-permission', 'Role Permission Management', 'admin'],
+  ['delete-role-permission', 'Role Permission Management', 'admin'],
+  ['view-role-permission', 'Role Permission Management', 'admin'],
 
-    'create-role-permission',
-    'update-role-permission',
-    'delete-role-permission',
-    'view-role-permission',
+  ['create-admin', 'Admin Management', 'admin'],
+  ['update-admin', 'Admin Management', 'admin'],
+  ['delete-admin', 'Admin Management', 'admin'],
+  ['view-admin', 'Admin Management', 'admin'],
 
-    
-    'create-admin',
-    'update-admin',
-    'delete-admin',
-    'view-admin',
+  ['create-subcity', 'Subcity Management', 'admin'],
+  ['update-subcity', 'Subcity Management', 'admin'],
+  ['delete-subcity', 'Subcity Management', 'admin'],
+  ['view-subcity', 'Subcity Management', 'admin'],
 
+  ['create-woreda', 'Woreda Management', 'admin'],
+  ['update-woreda', 'Woreda Management', 'admin'],
+  ['delete-woreda', 'Woreda Management', 'admin'],
+  ['view-woreda', 'Woreda Management', 'admin'],
 
-    'create-subcity',
-    'update-subcity',
-    'delete-subcity',
-    'view-subcity',
+  ['create-school', 'School Management', 'admin'],
+  ['update-school', 'School Management', 'admin'],
+  ['delete-school', 'School Management', 'admin'],
+  ['view-school', 'School Management', 'admin'],
 
-    'create-woreda',
-    'update-woreda',
-    'delete-woreda',
-    'view-woreda',
+  ['create-course', 'Course Management', 'admin'],
+  ['update-course', 'Course Management', 'admin'],
+  ['delete-course', 'Course Management', 'admin'],
+  ['view-course', 'Course Management', 'admin'],
 
-    'create-school',
-    'update-school',
-    'delete-school',
-    'view-school',
+  ['create-grade-course', 'Grade Course Management', 'admin'],
+  ['delete-grade-course', 'Grade Course Management', 'admin'],
+  ['view-grade-course', 'Grade Course Management', 'admin'],
 
-    'create-course',
-    'update-course',
-    'delete-course',
-    'view-course',
+  ['create-resource', 'Resource Management', 'admin'],
+  ['update-resource', 'Resource Management', 'admin'],
+  ['delete-resource', 'Resource Management', 'admin'],
+  ['view-resource', 'Resource Management', 'admin'],
 
+  ['create-exam', 'Exam Management', 'admin'],
+  ['update-exam', 'Exam Management', 'admin'],
+  ['delete-exam', 'Exam Management', 'admin'],
+  ['view-exam', 'Exam Management', 'admin'],
 
-    'create-grade-course',
-    'delete-grade-course',
-    'view-grade-course',
+  ['create-student', 'Student Management', 'director'],
+  ['update-student', 'Student Management', 'director'],
+  ['delete-student', 'Student Management', 'director'],
+  ['view-student', 'Student Management', 'director'],
 
+  ['create-teacher', 'Teacher Management', 'director'],
+  ['update-teacher', 'Teacher Management', 'director'],
+  ['delete-teacher', 'Teacher Management', 'director'],
+  ['view-teacher', 'Teacher Management', 'director'],
 
-    'create-resource',
-    'update-resource',
-    'delete-resource',
-    'view-resource',
+  ['create-teacher-grade-course', 'Teacher Course Management', 'director'],
+  ['update-teacher-grade-course', 'Teacher Course Management', 'director'],
+  ['delete-teacher-grade-course', 'Teacher Course Management', 'director'],
+  ['view-teacher-grade-course', 'Teacher Course Management', 'director'],
 
+  ['view-school-dashboard', 'Dashboard Management', 'director'],
+  ['view-all-dashboard', 'Dashboard Management', 'admin'],
+];
 
-    'create-exam',
-    'update-exam',
-    'delete-exam',
-    'view-exam',
+const allPermissions = await Promise.all(
+  detailedPermissions.map(([name, type, category]) =>
+    prisma.permission.upsert({
+      where: { permission_name: name },
+      update: {
+        description: `Permission for ${name.replace(/-/g, ' ')}`,
+        type,
+        category,
+      },
+      create: {
+        permission_name: name,
+        description: `Permission for ${name.replace(/-/g, ' ')}`,
+        type,
+        category,
+      },
+    }),
+  ),
+);
 
-
-    'create-school-admin',
-    'update-school-admin',
-    'delete-school-admin',
-    'view-school-admin',
-
-    'create-student',
-    'update-student',
-    'delete-student',
-    'view-student',
-
-    'create-teacher',
-    'update-teacher',
-    'delete-teacher',
-    'view-teacher',
-
-    'create-teacher-grade-course',
-    'update-teacher-grade-course',
-    'delete-teacher-grade-course',
-    'view-teacher-grade-course',
-
-
-    'view-school-dashboard',
-    'view-all-dashboard',
-    
-  ];
-
-  const allPermissions = await Promise.all(
-    detailedPermissions.map((name) =>
-      prisma.permission.upsert({
-        where: { permission_name: name },
-        update: { description: `Permission for ${name.replace(/-/g, ' ')}` },
-        create: {
-          permission_name: name,
-          description: `Permission for ${name.replace(/-/g, ' ')}`,
-        },
-      }),
-    ),
-  );
 
   // ------------------------------
   // Role-Permission Mapping

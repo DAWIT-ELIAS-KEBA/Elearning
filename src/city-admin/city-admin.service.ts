@@ -22,14 +22,24 @@ export class CityAdminService {
     const existing = await this.prisma.user.findUnique({ where: { user_name: dto.user_name } });
     if (existing) throw new BadRequestException('Duplicated city admin username!');
 
+    if(dto.school_id)
+    {
+       const school=await this.prisma.school.findUnique({ where: { id: dto.school_id } });
+       if(!school)
+       {
+          throw new BadRequestException('Invalid school selected!')
+       }
+    }
+
     return this.prisma.user.create({
       data: {
         name: dto.name,
         user_name: dto.user_name,
         gender: dto.gender,
         user_type: 'admin',
-        admin_level: 'city',
+        admin_level: dto.school_id?'city':'school',
         password: await bcrypt.hash('12345678', 10),
+        school_id: dto.school_id?dto.school_id:null,
         added_by: authUser.id,
       },
     });
@@ -41,13 +51,24 @@ export class CityAdminService {
     });
     if (!cityAdmin) throw new NotFoundException('Invalid city admin selected!');
 
+    if(dto.school_id)
+    {
+       const school=await this.prisma.school.findUnique({ where: { id: dto.school_id } });
+       if(!school)
+       {
+          throw new BadRequestException('Invalid school selected!')
+       }
+    }
+    
     return this.prisma.user.update({
       where: { id: dto.city_admin_id },
       data: {
         name: dto.name,
         user_name: dto.user_name,
         gender: dto.gender,
+        admin_level: dto.school_id?'city':'school',
         updated_by: authUser.id,
+        school_id: dto.school_id?dto.school_id:null,
       },
     });
   }
