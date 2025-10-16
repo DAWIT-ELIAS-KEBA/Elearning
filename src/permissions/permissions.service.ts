@@ -34,13 +34,11 @@ export class PermissionsService {
     }
   }
 
-  async findAll(): Promise<Record<string, PermissionResponseDto[]>> {
+  async findAll() {
     const permissions = await this.prisma.permission.findMany();
-    const permissionDtos = permissions.map((permission) =>
-      this.mapToResponseDto(permission),
-    );
+    
 
-    return this.groupPermissionsByResource(permissionDtos);
+    return permissions;
   }
 
   async findOne(id: string): Promise<PermissionResponseDto> {
@@ -104,20 +102,5 @@ export class PermissionsService {
     };
   }
 
-  private groupPermissionsByResource(
-    permissions: PermissionResponseDto[],
-  ): Record<string, PermissionResponseDto[]> {
-    const groupedPermissions: Record<string, PermissionResponseDto[]> = {};
-
-    permissions.forEach((permission) => {
-      const parts = permission.permissionName.split('-');
-      const resource = parts.slice(1).join('-');
-      if (!groupedPermissions[resource]) {
-        groupedPermissions[resource] = [];
-      }
-      groupedPermissions[resource].push(permission);
-    });
-
-    return groupedPermissions;
-  }
+  
 }

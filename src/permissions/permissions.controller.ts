@@ -64,7 +64,7 @@ export class PermissionsController {
     type: [PermissionResponseDto],
   })
   @Get()
-  findAll(): Promise<Record<string, PermissionResponseDto[]>> {
+  findAll(){
     return this.permissionsService.findAll();
   }
 
