@@ -81,6 +81,7 @@ model Role {
   id          String           @id @default(uuid()) @map("RoleID")
   role_name        String           @unique @map("RoleName")
   description     String?          @map("Description")
+  type            String           @default("") @map("Type")
   created_at       DateTime         @default(now()) @map("CreatedAt")
   updated_at       DateTime         @updatedAt @map("UpdatedAt")
   rolePermissions RolePermission[]

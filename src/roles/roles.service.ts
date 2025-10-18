@@ -14,6 +14,11 @@ export class RolesService {
   constructor(private prisma: PrismaService) {}
 
   async create(createRoleDto: CreateRoleDto): Promise<RoleResponseDto> {
+
+    if(createRoleDto.type!="admin" && createRoleDto.type!="director")
+    {
+      throw new ConflictException('Invalid role type!');
+    }
     try {
       const role = await this.prisma.role.create({
         data: createRoleDto
@@ -30,9 +35,9 @@ export class RolesService {
     }
   }
 
-  async findAll(): Promise<RoleResponseDto[]> {
-    const roles = await this.prisma.role.findMany();
-    return roles.map((role) => this.mapToResponseDto(role));
+  async findAll(){
+    return await this.prisma.role.findMany({include:{rolePermissions:{include:{permission:true}}}});
+    
   }
 
   async findOne(id: string): Promise<RoleResponseDto> {
@@ -51,6 +56,34 @@ export class RolesService {
     id: string,
     updateRoleDto: UpdateRoleDto,
   ): Promise<RoleResponseDto> {
+
+    const updatingRole = await this.prisma.role.findFirst({
+      where: { id: id },
+      include:{
+        rolePermissions:{include:{
+          permission:true
+        }
+
+        }
+      }
+    });
+    if(!updatingRole)
+    {
+      throw new NotFoundException(`Invalid role!`);
+    }
+    if(updateRoleDto.type!="admin" && updateRoleDto.type!="director")
+    {
+      throw new ConflictException('Invalid role type!');
+    }
+    if(updatingRole.type != updateRoleDto.type)
+    {
+       updatingRole.rolePermissions.forEach(rolePermission => {
+          if(rolePermission.permission.type != updateRoleDto.type)
+          {
+            throw new NotFoundException(`Permission and role type miss matched. First remove `+updateRoleDto.type+` permissions from this role!` );
+          }
+       });
+    }
     try {
       const role = await this.prisma.role.update({
         where: { id: id },

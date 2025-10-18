@@ -17,4 +17,11 @@ export class CreateRoleDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @ApiPropertyOptional({
+    description: 'A type of the role.',
+    example: 'Type of role which is "admin" or "director" ',
+  })
+  @IsString()
+  type?: string;
 }

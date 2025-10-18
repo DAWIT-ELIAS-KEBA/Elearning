@@ -76,7 +76,7 @@ export class RolesController {
     description: 'A list of roles.',
     type: [RoleResponseDto],
   })
-  async findAll(): Promise<RoleResponseDto[]> {
+  async findAll() {
     return this.rolesService.findAll();
   }
 

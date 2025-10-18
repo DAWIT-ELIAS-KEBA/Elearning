@@ -20,12 +20,12 @@ async function main() {
     prisma.role.upsert({
       where: { role_name: 'Admin' },
       update: { description: 'Administrator' },
-      create: { role_name: 'Admin', description: 'Administrator' },
+      create: { role_name: 'Admin', description: 'Administrator',type:"admin" },
     }),
     prisma.role.upsert({
       where: { role_name: 'Director' },
       update: { description: 'School Director' },
-      create: { role_name: 'Director', description: 'School Director' },
+      create: { role_name: 'Director', description: 'School Director',type:"director" },
     }),
    
   ]);
