@@ -69,6 +69,7 @@ export class AuthService {
       woreda_id: user.woreda_id,
       status: user.status,
       last_login: user.last_login,
+      is_pwd_changed:user.is_pwd_changed,
       photo: user.photo,
       school: user.school ? { id: user.school.id, name: user.school.name } : null,
       woreda: user.woreda ? { id: user.woreda.id, name: user.woreda.name } : null,

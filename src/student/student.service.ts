@@ -32,6 +32,15 @@ export class StudentService {
       throw new BadRequestException('Invalid grade_id provided');
     }
 
+    const firstPassword = Array.from({ length: 4 }, () =>
+      String.fromCharCode(
+        Math.random() < 0.5
+          ? 65 + Math.floor(Math.random() * 26) // A–Z
+          : 97 + Math.floor(Math.random() * 26) // a–z
+      )
+    ).join('');
+
+
     // 3. Create student
     return await this.prisma.user.create({
       data: {
@@ -39,7 +48,8 @@ export class StudentService {
         user_name: dto.user_name,
         gender: dto.gender,
         user_type: 'student',
-        password: await bcrypt.hash('12345678', 10),
+         password: await bcrypt.hash(firstPassword, 10),
+        first_password:firstPassword,
         added_by: userId,
         school_id: schoolId,
         section: dto.section,

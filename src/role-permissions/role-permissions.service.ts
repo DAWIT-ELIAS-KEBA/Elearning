@@ -18,6 +18,36 @@ export class RolePermissionsService {
   async create(
     createRolePermissionDto: CreateRolePermissionDto,
   ): Promise<RolePermissionResponseDto> {
+
+    const role =await this.prisma.role.findFirst({
+      where:{id:createRolePermissionDto.role_id}
+    });
+
+    const permission =await this.prisma.permission.findFirst({
+      where:{id:createRolePermissionDto.permission_id}
+    });
+
+    if(!role)
+    {
+      throw new NotFoundException(
+            'Role not found!',
+          );
+    }
+
+    if(!permission)
+    {
+      throw new NotFoundException(
+            'Permission not found!',
+          );
+    }
+
+    if(role.type != permission.type)
+    {
+      throw new NotFoundException(
+            'You can not assign this permission to this role!',
+          );
+    }
+
     try {
       const rolePermission = await this.prisma.rolePermission.create({
         data: createRolePermissionDto,
@@ -44,6 +74,32 @@ export class RolePermissionsService {
     createRolePermissionDto: CreateRolePermissionsDto,
   ): Promise<RolePermissionResponseDto[]> {
     const { role_id, permissionIds } = createRolePermissionDto;
+
+    const role = await this.prisma.role.findFirst({
+      where: { id: role_id },
+    });
+
+    if (!role) {
+      throw new NotFoundException('Role not found!');
+    }
+
+    const permissions = await this.prisma.permission.findMany({
+      where: { id: { in: permissionIds } },
+    });
+
+    if (permissions.length !== permissionIds.length) {
+      throw new NotFoundException('Some permissions not found!');
+    }
+
+    const hasDifferentType = permissions.some(
+      (permission) => permission.type !== role.type,
+    );
+
+    if (hasDifferentType) {
+      throw new NotFoundException('Invalid permission type found!');
+    }
+
+    // If all checks pass, you can prepare the data for insertion
     const data = permissionIds.map((permission_id) => ({
       role_id,
       permission_id,

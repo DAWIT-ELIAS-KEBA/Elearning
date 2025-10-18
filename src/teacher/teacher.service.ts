@@ -28,7 +28,15 @@ async registerTeacher(dto: any, addedBy: string, schoolId: string) {
     throw new BadRequestException('Username already exists!');
   }
 
-  const hashedPassword = await bcrypt.hash('12345678', 10);
+
+  const firstPassword = Array.from({ length: 4 }, () =>
+      String.fromCharCode(
+        Math.random() < 0.5
+          ? 65 + Math.floor(Math.random() * 26) // A–Z
+          : 97 + Math.floor(Math.random() * 26) // a–z
+      )
+    ).join('');
+
 
   return this.prisma.user.create({
     data: {
@@ -36,7 +44,8 @@ async registerTeacher(dto: any, addedBy: string, schoolId: string) {
       user_name: dto.user_name,
       gender: dto.gender,
       user_type: 'teacher',
-      password: hashedPassword,
+      password: await bcrypt.hash(firstPassword, 10),
+      first_password:firstPassword,
       added_by: addedBy,
       school_id: schoolId,
     },

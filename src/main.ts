@@ -18,7 +18,7 @@ async function bootstrap() {
 
 
   app.enableCors({
-    origin: 'http://localhost:5173', // React dev server
+    origin: 'http://localhost:5174', // React dev server
     credentials: true,              // allow cookies if needed
   });
 

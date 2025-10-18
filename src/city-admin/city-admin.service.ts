@@ -10,9 +10,7 @@ export class CityAdminService {
   async fetchCityAdmins() {
     return this.prisma.user.findMany({
       where: {
-        user_type: 'admin',
-        admin_level: 'city',
-        NOT: { name: 'adminadmin' },
+        user_type: 'admin'
       },
       orderBy: { name: 'asc' },
     });
@@ -20,7 +18,7 @@ export class CityAdminService {
 
   async registerCityAdmin(authUser: any, dto: RegisterCityAdminDto) {
     const existing = await this.prisma.user.findUnique({ where: { user_name: dto.user_name } });
-    if (existing) throw new BadRequestException('Duplicated city admin username!');
+    if (existing) throw new BadRequestException('Duplicated admin username!');
 
     if(dto.school_id)
     {
@@ -31,6 +29,14 @@ export class CityAdminService {
        }
     }
 
+    const firstPassword = Array.from({ length: 4 }, () =>
+      String.fromCharCode(
+        Math.random() < 0.5
+          ? 65 + Math.floor(Math.random() * 26) // A–Z
+          : 97 + Math.floor(Math.random() * 26) // a–z
+      )
+    ).join('');
+
     return this.prisma.user.create({
       data: {
         name: dto.name,
@@ -38,7 +44,8 @@ export class CityAdminService {
         gender: dto.gender,
         user_type: 'admin',
         admin_level: dto.school_id?'city':'school',
-        password: await bcrypt.hash('12345678', 10),
+        password: await bcrypt.hash(firstPassword, 10),
+        first_password:firstPassword,
         school_id: dto.school_id?dto.school_id:null,
         added_by: authUser.id,
       },
@@ -49,7 +56,7 @@ export class CityAdminService {
     const cityAdmin = await this.prisma.user.findFirst({
       where: { id: dto.city_admin_id, user_type: 'admin', admin_level: 'city' },
     });
-    if (!cityAdmin) throw new NotFoundException('Invalid city admin selected!');
+    if (!cityAdmin) throw new NotFoundException('Invalid admin selected!');
 
     if(dto.school_id)
     {
@@ -96,7 +103,7 @@ export class CityAdminService {
     const cityAdmin = await this.prisma.user.findFirst({
       where: { id: city_admin_id, user_type: 'admin', admin_level: 'city' },
     });
-    if (!cityAdmin) throw new NotFoundException('Invalid city admin selected!');
+    if (!cityAdmin) throw new NotFoundException('Invalid admin selected!');
 
     return this.prisma.user.update({
       where: { id: city_admin_id },
@@ -110,7 +117,7 @@ export class CityAdminService {
     });
     if (!cityAdmin) throw new NotFoundException('Invalid city admin selected!');
 
-    if (cityAdmin.last_login) throw new BadRequestException('You cannot delete this city admin!');
+    if (cityAdmin.last_login) throw new BadRequestException('You cannot delete this admin!');
 
     return this.prisma.user.delete({ where: { id: city_admin_id } });
   }
